@@ -30,6 +30,10 @@ app.get('/no', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`No-as-a-Service is running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`No-as-a-Service is running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
