@@ -23,24 +23,30 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
-// Select a random rejection reason
-function generateReason(reasons) {
+// Select a rejection reason. If idx is supplied, return that specific entry;
+// otherwise return a random one.
+function generateReason(reasons, idx) {
+  if (idx !== undefined && idx !== null) {
+    const id = parseInt(idx, 10);
+    if (isNaN(id) || id < 0 || id >= reasons.length) {
+      throw new Error('Reason not found');
+    }
+    return reasons[id];
+  }
+
+  // No index supplied — return a random reason
   return reasons[Math.floor(Math.random() * reasons.length)];
 }
 
-// Random rejection reason endpoint
+// Rejection reason endpoint — accepts an optional ?idx query parameter
 app.get('/no', (req, res) => {
-  const reason = generateReason(reasons);
-  res.json({ reason });
-});
-
-// Specific rejection reason by ID (0-indexed)
-app.get('/no/:id', (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id) || id < 0 || id >= reasons.length) {
-    return res.status(404).json({ error: 'Reason not found.' });
+  const idx = req.query.idx; // optional index query param
+  try {
+    const reason = generateReason(reasons, idx);
+    res.json({ reason });
+  } catch (e) {
+    return res.status(404).json({ error: e.message });
   }
-  res.json({ reason: reasons[id] });
 });
 
 // Start server
